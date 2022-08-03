@@ -75,6 +75,9 @@ def residuals(
                 minfo, grid_flux, params[:-LIM], listpar, dims, isig=dims["sig0"],
             )
 
+    keep = data_sigma != 0.0
+    data_flux_notlog = 10 ** data_flux
+    data_sigma_notlog = data_sigma * data_flux_notlog
     if MODEL == "acol" or MODEL == "aara":
         bottom, left = 0.80, 0.51  # 0.80, 0.48  # 0.75, 0.48
         width, height = 0.96 - left, 0.97 - bottom
@@ -121,16 +124,13 @@ def residuals(
         F_temp = F_temp * norma
         ax1.plot(data_wave, F_temp, color="gray", alpha=0.1, lw=0.6)
 
-    keep = data_sigma != 0.0
-    data_flux_notlog = 10 ** data_flux
-    data_sigma_notlog = data_sigma * data_flux_notlog
-    ax2.plot(
-        data_wave[keep],
-        (data_flux_notlog[keep] - F_temp[keep]) / data_sigma_notlog[keep],
-        "ks",
-        ms=ms,
-        alpha=0.2,
-    )
+        ax2.plot(
+            data_wave[keep],
+            (data_flux_notlog[keep] - F_temp[keep]) / data_sigma_notlog[keep],
+            "ks",
+            ms=int(ms - 2),
+            alpha=0.1,
+        )
 
     # Plot Data
     ax1.errorbar(
@@ -139,7 +139,7 @@ def residuals(
         yerr=data_sigma_notlog[keep],
         ls="",
         marker="o",
-        alpha=0.5,
+        # alpha=0.5,
         ms=ms,
         color="k",
         linewidth=1,
@@ -152,8 +152,8 @@ def residuals(
         yerr=data_sigma_notlog[antikeep],
         ls="",
         marker=arrow,
-        alpha=0.5,
-        ms=int(ms + 5),
+        # alpha=0.5,
+        ms=int(ms + 7),
         color="k",
         linewidth=1,
     )
@@ -221,7 +221,7 @@ def residuals_POL(
         linewidth=1,
     )
 
-    ax1.set_xlim(0.3, 0.9)
+    ax1.set_xlim(0.34, 0.9)
     ax2.axhline(y=0.0, ls=(0, (5, 10)), lw=0.7, color="k")
     ax2.set_xlabel("$\lambda\,\mathrm{[\mu m]}$", fontsize=16)
     ax1.set_ylabel(r"$P_{\%}$", fontsize=16)
