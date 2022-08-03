@@ -31,6 +31,7 @@ FOLDER_MODELS = "../models/"
     INCL_PRIOR,
     STELLAR_KDE_PRIOR,
     PARALLEL,
+    REACH_ACOR,
     PROCESSORS,
     CORNER_COLOR,
 ) = star_information(fname)
@@ -112,7 +113,7 @@ elif CORNER_COLOR == "pink":
     COLOR_DENS = "xkcd:pink red"
 
 
-if MODEL == "2022 BeAtlas":
+if MODEL == "BeAtlas2022_phot":
     LABELS = [
         r"$M\,[M_\odot]$",
         r"$W$",
@@ -148,7 +149,7 @@ elif MODEL == "acol" or MODEL == "pol" or MODEL == "aara":
     ]
 
 
-elif MODEL == "old disk BeAtlas":
+elif MODEL == "BeAtlas2015_disk":
     LABELS = [
         r"$M\,[\mathrm{M_\odot}]$",
         r"$W$",
@@ -175,3 +176,29 @@ if POL:
 if INCLUDE_RV:
     LABELS = LABELS + [r"$R_\mathrm{V}$"]
     LABELS2 = LABELS2 + [r"$R_\mathrm{V}$"]
+
+TAG = ""
+if VSINI_PRIOR or PLX_PRIOR or INCL_PRIOR:
+    TAG = TAG + "_P"
+    if VSINI_PRIOR:
+        TAG = TAG + "v"
+    if PLX_PRIOR:
+        TAG = TAG + "d"
+    if INCL_PRIOR:
+        TAG = TAG + "i"
+# if flag.box_W or flag.box_i:
+#     TAG = TAG + "_B"
+#     if flag.box_W:
+#         TAG = TAG + "w"
+#     if flag.box_i:
+#         TAG = TAG + "i"
+
+TAG = TAG + "_" + LBD_RANGE
+if HALPHA:
+    TAG = TAG + "+Ha"
+if HBETA:
+    TAG = TAG + "+Hb"
+if HDELTA:
+    TAG = TAG + "+Hd"
+if HGAMMA:
+    TAG = TAG + "+Hg"

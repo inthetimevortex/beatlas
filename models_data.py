@@ -17,8 +17,6 @@ def model_reader(fname, HALPHA, HBETA, HDELTA, HGAMMA):
     lbd_SED = data["lbd_SED"]
     listpar = data["listpar"]
     dims = data["dims"]
-    EWs = data["EWs"]
-    FWHMs = data["FWHMs"]
 
     models_combined = [models_SED]
     lbd_combined = [lbd_SED]
@@ -26,6 +24,12 @@ def model_reader(fname, HALPHA, HBETA, HDELTA, HGAMMA):
     if HALPHA:
         models_combined.append(data["models_Ha"])
         lbd_combined.append(data["lbd_Ha"])
+        EWs = data["EWs"]
+        FWHMs = data["FWHMs"]
+    else:
+        EWs = []
+        FWHMs = []
+
     if HBETA:
         models_combined.append(data["models_Hb"])
         lbd_combined.append(data["lbd_Hb"])
@@ -83,27 +87,27 @@ def read_iue(FOLDER_DATA, STAR, lbdarr):
         # Combines the observations from all files in the folder, taking the good quality ones
         for fname in file_name:
             # print(file_iue)
-            hdulist = fits.open(fname)
-            tbdata = hdulist[1].data
-            wave = tbdata.field("WAVELENGTH") * 1e-4  # mum
-            flux = tbdata.field("FLUX") * 1e4  # erg/cm2/s/A -> erg/cm2/s/mum
-            sigma = tbdata.field("SIGMA") * 1e4  # erg/cm2/s/A -> erg/cm2/s/mum
+            with fits.open(fname) as hdulist:
+                tbdata = hdulist[1].data
+                wave = tbdata.field("WAVELENGTH") * 1e-4  # mum
+                flux = tbdata.field("FLUX") * 1e4  # erg/cm2/s/A -> erg/cm2/s/mum
+                sigma = tbdata.field("SIGMA") * 1e4  # erg/cm2/s/A -> erg/cm2/s/mum
 
-            # Filter of bad data: '0' is good data
-            qualy = tbdata.field("QUALITY")
-            idx = np.where((qualy == 0))
-            wave = wave[idx]
-            sigma = sigma[idx]
-            flux = flux[idx]
+                # Filter of bad data: '0' is good data
+                qualy = tbdata.field("QUALITY")
+                idx = np.where((qualy == 0))
+                wave = wave[idx]
+                sigma = sigma[idx]
+                flux = flux[idx]
 
-            idx = np.where((flux > 0.0))
-            wave = wave[idx]
-            sigma = sigma[idx]
-            flux = flux[idx]
+                idx = np.where((flux > 0.0))
+                wave = wave[idx]
+                sigma = sigma[idx]
+                flux = flux[idx]
 
-            fluxes = np.concatenate((fluxes, flux), axis=0)
-            waves = np.concatenate((waves, wave), axis=0)
-            errors = np.concatenate((errors, sigma), axis=0)
+                fluxes = np.concatenate((fluxes, flux), axis=0)
+                waves = np.concatenate((waves, wave), axis=0)
+                errors = np.concatenate((errors, sigma), axis=0)
 
     wave_lim_min_iue = min(waves)
     wave_lim_max_iue = 0.290
@@ -244,7 +248,7 @@ def combine_sed(LBD_RANGE, wave, flux, sigma, models, lbd):
     sigma = sigma[idx]
     models_new = np.zeros([len(models), len(wave)])
 
-    models[models < 0] = 1e-20
+    models[models <= 0] = 1e-20
     for i in range(len(models)):  # A interpolacao
         models_new[i, :] = griddata(
             np.log10(lbd), np.log10(models[i]), np.log10(wave), method="linear"
@@ -409,7 +413,7 @@ def read_observables(SED, POL, LBD_RANGE, FOLDER_DATA, STAR, lbd, models):
         flux = np.hstack([flux0, flux1])
         sigma = np.hstack([sigma0, sigma1])
         data_wave, data_flux, data_sigma, grid_flux = combine_sed(
-            LBD_RANGE, wave, flux, sigma / 2.0, models[index], lbd[index]
+            LBD_RANGE, wave, flux, sigma, models[index], lbd[index]
         )
 
         return data_wave, data_flux, data_sigma, grid_flux

@@ -12,6 +12,7 @@ from .utilities import (
     geneva_interp_fast,
     griddataBA,
     griddataBAtlas,
+    print_to_latex,
 )
 from .models_data import (
     model_reader,
@@ -22,7 +23,8 @@ from .models_data import (
     read_opd_pol,
     read_observables,
 )
-from .stats import lnlike, lnprob, lnprior
+
+# from .stats import lnlike, lnprob, lnprior, emcee_inference
 from .plots import residuals, traceplot
 from .hpd import hpd_grid
 from .be_theory import w2wbig, wbig2w, oblat2w, W2oblat, obl2W, hfrac2tms, beta
@@ -42,6 +44,7 @@ __all__ = (
     "geneva_interp_fast",
     "griddataBA",
     "griddataBAtlas",
+    "print_to_latex",
     "model_reader",
     "read_stellar_prior",
     "read_iue",
@@ -49,9 +52,10 @@ __all__ = (
     "read_opd_pol",
     "combine_sed",
     "read_observables",
-    "lnlike",
-    "lnprob",
-    "lnprior",
+    # "lnlike",
+    # "lnprob",
+    # "lnprior",
+    # "emcee_inferences",
     "residuals",
     "traceplot",
     "hpd_grid",

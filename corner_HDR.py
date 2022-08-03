@@ -8,7 +8,7 @@ import matplotlib.pyplot as pl
 from matplotlib.ticker import MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap, colorConverter
 from matplotlib.ticker import ScalarFormatter
-from hpd import hpd_grid
+from beatlas.hpd import hpd_grid
 
 try:
     from scipy.ndimage import gaussian_filter
@@ -170,8 +170,8 @@ def corner(
         title_kwargs = dict()
     if label_kwargs is None:
         label_kwargs = dict()
-    pl.rc("xtick", labelsize=16)
-    pl.rc("ytick", labelsize=16)
+    pl.rc("xtick", labelsize=15.5)
+    pl.rc("ytick", labelsize=15.5)
     # Try filling in labels from pandas.DataFrame columns.
     if labels is None:
         try:

@@ -3,6 +3,9 @@ import numpy as np
 import seaborn as sns
 from PyAstronomy import pyasl
 from beatlas.utilities import griddataBA, griddataBAtlas
+from icecream import ic
+
+sns.set_style("white")
 
 
 def traceplot(NDIM, LABELS, sampler, fname):
@@ -11,7 +14,7 @@ def traceplot(NDIM, LABELS, sampler, fname):
 
     """
 
-    fig, axes = plt.subplots(NDIM, figsize=(7, 5), sharex=True)
+    fig, axes = plt.subplots(NDIM, figsize=(7, 12), sharex=True)
 
     # Load the chain
     samples = sampler.get_chain()
@@ -20,16 +23,15 @@ def traceplot(NDIM, LABELS, sampler, fname):
         ax = axes[i]
         ax.plot(samples[:, :, i], "k", alpha=0.3)
         ax.set_xlim(0, len(samples))
-        ax.set_ylabel(LABELS[i], fontsize=16)
+        ax.set_ylabel(LABELS[i])  # , fontsize=16)
         ax.yaxis.set_label_coords(-0.1, 0.5)
 
-    axes[-1].set_xlabel("Step number", fontsize=16)
+    axes[-1].set_xlabel("Step number")  # , fontsize=16)
 
-    plt.savefig(fname + ".png", dpi=100)
+    plt.savefig(fname + ".png", bbox_inches="tight")
 
 
 def residuals(
-    par,
     MODEL,
     LBD_RANGE,
     INCLUDE_RV,
@@ -43,6 +45,8 @@ def residuals(
     minfo,
     listpar,
     dims,
+    burnin,
+    thin,
 ):
     """
     Create residuals plot separated from the corner
@@ -52,9 +56,7 @@ def residuals(
     residuals(par, npy, current_folder, fig_name)
 
     """
-    flat_samples = sampler.get_chain(
-        discard=int(0.1 * STEPS), thin=int(0.025 * STEPS), flat=True
-    )
+    flat_samples = sampler.get_chain(discard=burnin, thin=thin, flat=True)
     par_list = []
     inds = np.random.randint(len(flat_samples), size=300)
     for ind in inds:
@@ -73,11 +75,20 @@ def residuals(
                 minfo, grid_flux, params[:-LIM], listpar, dims, isig=dims["sig0"],
             )
 
-    bottom, left = 0.82, 0.51  # 0.80, 0.48  # 0.75, 0.48
-    width, height = 0.96 - left, 0.97 - bottom
-    ax1 = plt.axes([left, bottom, width, height])
-    ax2 = plt.axes([left, bottom - 0.07, width, 0.055])
-    ax1.get_xaxis().set_visible(False)
+    if MODEL == "acol":
+        bottom, left = 0.80, 0.51  # 0.80, 0.48  # 0.75, 0.48
+        width, height = 0.96 - left, 0.97 - bottom
+        ax1 = plt.axes([left, bottom, width, height])
+        ax2 = plt.axes([left, bottom - 0.095, width, 0.075])
+        ax1.get_xaxis().set_visible(False)
+        ms = 8
+    else:
+        bottom, left = 0.82, 0.51  # 0.80, 0.48  # 0.75, 0.48
+        width, height = 0.96 - left, 0.97 - bottom
+        ax1 = plt.axes([left, bottom, width, height])
+        ax2 = plt.axes([left, bottom - 0.08, width, 0.065])
+        ax1.get_xaxis().set_visible(False)
+        ms = 6
 
     # Plot Models
     for i in range(len(par_list)):
@@ -107,7 +118,8 @@ def residuals(
         )
         dist = 1e3 / dist_tmp
         norma = (10.0 / dist) ** 2
-        ax1.plot(data_wave, F_temp * norma, color="gray", alpha=0.1, lw=0.6)
+        F_temp = F_temp * norma
+        ax1.plot(data_wave, F_temp, color="gray", alpha=0.1, lw=0.6)
 
     keep = data_sigma != 0.0
     data_flux_notlog = 10 ** data_flux
@@ -116,7 +128,7 @@ def residuals(
         data_wave[keep],
         (data_flux_notlog[keep] - F_temp[keep]) / data_sigma_notlog[keep],
         "ks",
-        ms=6,
+        ms=ms,
         alpha=0.2,
     )
 
@@ -128,7 +140,7 @@ def residuals(
         ls="",
         marker="o",
         alpha=0.5,
-        ms=6,
+        ms=ms,
         color="k",
         linewidth=1,
     )
@@ -141,7 +153,7 @@ def residuals(
         ls="",
         marker=arrow,
         alpha=0.5,
-        ms=6,
+        ms=int(ms + 5),
         color="k",
         linewidth=1,
     )
@@ -154,7 +166,8 @@ def residuals(
     ax2.sharex(ax1)
     if LBD_RANGE != "UV":
         ax1.set_xscale("log")
+        ax1.set_yscale("log")
         ax2.set_xscale("log")
-    plt.ticklabel_format(axis="y", style="sci", scilimits=(-7, 0))
+    # plt.ticklabel_format(axis="y", style="sci", scilimits=(-7, 0))
 
     return

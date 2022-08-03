@@ -10,7 +10,7 @@ from beatlas.utilities import (
     griddataBA,
     griddataBAtlas,
 )
-from beatlas.constants import *
+from constants import *
 
 
 def lnlike(

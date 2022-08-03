@@ -1,4 +1,5 @@
 import numpy as np
+from icecream import ic
 
 
 # WBIG2W
@@ -206,7 +207,10 @@ def beta(par, is_ob=False):
         while delt >= 1e-5:
             f = np.cos(n) + np.log(np.tan(n / 2.0)) - ftheta
             df = -np.sin(n) + 1.0 / np.sin(n)
-            n1 = n - f / df
+            if df > 0.0:
+                n1 = n - f / df
+            else:
+                n1 = 0.0
             delt = abs(n1 - n) / n
             n = n1
 

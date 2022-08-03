@@ -3,7 +3,7 @@ from scipy.interpolate import griddata
 from scipy.stats import gaussian_kde
 import tarfile as _tarfile
 from beatlas.be_theory import W2oblat, oblat2w, beta
-from constants import *
+from beatlas.constants import *
 
 
 def kde_scipy(x, x_grid, bandwidth=0.2):
@@ -600,11 +600,11 @@ def print_to_latex(MODEL, LABELS2, fname, params_fit, errors_fit):
                     )
                     if vsinit > vsini_range[0]:
                         vsini_range[0] = vsinit
-                        print("vsini max is now = {}".format(vsini_range[0]))
+                        # print("vsini max is now = {}".format(vsini_range[0]))
 
                     if vsinit < vsini_range[1]:
                         vsini_range[1] = vsinit
-                        print("vsini min is now = {}".format(vsini_range[1]))
+                        # print("vsini min is now = {}".format(vsini_range[1]))
                     A_roche = (
                         4.0
                         * np.pi

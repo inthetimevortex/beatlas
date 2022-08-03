@@ -31,8 +31,9 @@ def star_information(fname):
     INCL_PRIOR = values[19][-1] == "True"
     STELLAR_KDE_PRIOR = values[20][-1] == "True"
     PARALLEL = values[21][-1] == "True"
-    PROCESSORS = int(values[22][-1])
-    CORNER_COLOR = values[23][-1]
+    REACH_ACOR = values[22][-1] == "True"
+    PROCESSORS = int(values[23][-1])
+    CORNER_COLOR = values[24][-1]
 
     return (
         STAR,
@@ -57,6 +58,7 @@ def star_information(fname):
         INCL_PRIOR,
         STELLAR_KDE_PRIOR,
         PARALLEL,
+        REACH_ACOR,
         PROCESSORS,
         CORNER_COLOR,
     )
