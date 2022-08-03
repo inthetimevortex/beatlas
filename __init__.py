@@ -25,7 +25,7 @@ from .models_data import (
 )
 
 # from .stats import lnlike, lnprob, lnprior, emcee_inference
-from .plots import residuals, traceplot
+from .plots import residuals, residuals_POL, traceplot
 from .hpd import hpd_grid
 from .be_theory import w2wbig, wbig2w, oblat2w, W2oblat, obl2W, hfrac2tms, beta
 from .star_info import star_information
@@ -57,6 +57,7 @@ __all__ = (
     # "lnprior",
     # "emcee_inferences",
     "residuals",
+    "residuals_POL",
     "traceplot",
     "hpd_grid",
     "w2wbig",

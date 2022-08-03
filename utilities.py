@@ -13,7 +13,7 @@ def kde_scipy(x, x_grid, bandwidth=0.2):
     return kde.evaluate(x_grid)
 
 
-def set_ranges(INCLUDE_RV, PLX, D_PLX, listpar):
+def set_ranges(INCLUDE_RV, PLX, D_PLX, POL, listpar):
     if INCLUDE_RV:
         ebmv, rv = [[0.0, 0.1], [2.0, 5.8]]
     else:
@@ -29,8 +29,9 @@ def set_ranges(INCLUDE_RV, PLX, D_PLX, listpar):
     for val in listpar:
         ranges.append([val[0], val[-1]])
 
-    ranges.append([dist_min, dist_max])
-    ranges.append([ebmv[0], ebmv[-1]])
+    if not POL:
+        ranges.append([dist_min, dist_max])
+        ranges.append([ebmv[0], ebmv[-1]])
 
     if INCLUDE_RV:
         ranges.append(rv)
@@ -498,7 +499,7 @@ def print_to_latex(MODEL, LABELS2, fname, params_fit, errors_fit):
         incl_range = [incl + errors_fit[3][0], incl - errors_fit[3][1]]
         # dist = best_pars[4][0]
         # ebmv = best_pars[5][0]
-    if MODEL == "acol":
+    if MODEL == "acol" or MODEL == "aara" or MODEL == "pol":
         Mstar = params_fit[0]
         W = params_fit[1]
         tms = params_fit[2]

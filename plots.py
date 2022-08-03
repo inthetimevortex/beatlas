@@ -75,7 +75,7 @@ def residuals(
                 minfo, grid_flux, params[:-LIM], listpar, dims, isig=dims["sig0"],
             )
 
-    if MODEL == "acol":
+    if MODEL == "acol" or MODEL == "aara":
         bottom, left = 0.80, 0.51  # 0.80, 0.48  # 0.75, 0.48
         width, height = 0.96 - left, 0.97 - bottom
         ax1 = plt.axes([left, bottom, width, height])
@@ -169,5 +169,63 @@ def residuals(
         ax1.set_yscale("log")
         ax2.set_xscale("log")
     # plt.ticklabel_format(axis="y", style="sci", scilimits=(-7, 0))
+
+    return
+
+
+def residuals_POL(
+    MODEL,
+    LIM,
+    STEPS,
+    sampler,
+    data_wave,
+    data_flux,
+    data_sigma,
+    grid_flux,
+    minfo,
+    listpar,
+    dims,
+    burnin,
+    thin,
+):
+    flat_samples = sampler.get_chain(discard=burnin, thin=thin, flat=True)
+    par_list = []
+    inds = np.random.randint(len(flat_samples), size=300)
+    for ind in inds:
+        params = flat_samples[ind]
+        par_list.append(params)
+
+    F_list = np.zeros([len(par_list), len(data_flux)])
+
+    bottom, left = 0.82, 0.51  # 0.80, 0.48  # 0.75, 0.48
+    width, height = 0.96 - left, 0.97 - bottom
+    ax1 = plt.axes([left, bottom, width, height])
+    ax2 = plt.axes([left, bottom - 0.08, width, 0.065])
+    ax1.get_xaxis().set_visible(False)
+    ms = 6
+
+    for i, params in enumerate(par_list):
+        F_list[i] = griddataBA(minfo, grid_flux, params[:-LIM], listpar, dims)
+        ax1.plot(data_wave, F_list[i], color="gray", alpha=0.1, lw=0.6)
+
+    ax2.plot(data_wave, (data_flux - F_list[-1]) / data_sigma, "ks", ms=ms, alpha=0.2)
+    ax1.errorbar(
+        data_wave,
+        data_flux,
+        yerr=data_sigma,
+        ls="",
+        marker="o",
+        alpha=0.5,
+        ms=ms,
+        color="k",
+        linewidth=1,
+    )
+
+    ax1.set_xlim(0.3, 0.9)
+    ax2.axhline(y=0.0, ls=(0, (5, 10)), lw=0.7, color="k")
+    ax2.set_xlabel("$\lambda\,\mathrm{[\mu m]}$", fontsize=16)
+    ax1.set_ylabel(r"$P_{\%}$", fontsize=16)
+    ax2.sharex(ax1)
+    ax2.set_ylabel("$(P-P_\mathrm{m})/\sigma$", fontsize=16)
 
     return
