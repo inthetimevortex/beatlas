@@ -311,7 +311,7 @@ def corner(
             hpd_mu, x_mu, y_mu, modes_mu = hpd_grid(x, alpha=0.32)
             for (x0, x1) in hpd_mu:
                 # ax.hlines(y=0, xmin=x0, xmax=x1, linewidth=5)
-                ax.axvspan(x0, x1, color=color_dens, alpha=0.1)
+                ax.axvspan(x0, x1, color=color_dens, alpha=0.2)
                 ax.axvline(x=x0, color="grey", linestyle="--", linewidth=1)
                 ax.axvline(x=x1, color="grey", linestyle="--", linewidth=1)
 
@@ -331,13 +331,18 @@ def corner(
             if title_fmt is not None:
                 # Compute the quantiles for the title. This might redo
                 # unneeded computation but who cares.
-                q_16, q_50, q_84 = quantile(x, [0.16, 0.5, 0.84], weights=weights)
-                q_m, q_p = truths[i] - q_16, q_84 - truths[i]  # q_50-q_16, q_84-q_50
+                # q_16, q_50, q_84 = quantile(x, [0.16, 0.5, 0.84], weights=weights)
+                # q_m, q_p = truths[i] - q_16, q_84 - truths[i]  # q_50-q_16, q_84-q_50
+
+                q_50 = truths[i][0]
+                q_m = q_50 - hpd_mu[0][0]
+                q_p = hpd_mu[0][1] - q_50
 
                 # Format the quantile display.
                 fmt = "{{0:{0}}}".format(title_fmt).format
                 title = r"${{{0}}}_{{-{1}}}^{{+{2}}}$"
                 title = title.format(fmt(q_50), fmt(q_m), fmt(q_p))
+                # title = title.format(q_50, q_m, q_p)
 
                 # Add in the column name if it's given.
                 if labels is not None:

@@ -4,6 +4,8 @@ from scipy.stats import gaussian_kde
 import tarfile as _tarfile
 from beatlas.be_theory import W2oblat, oblat2w, beta
 from beatlas.constants import *
+from beatlas.PT_makemag import convolution_Johnsons, convolution_JohnsonsZP
+from PyAstronomy import pyasl
 
 
 def kde_scipy(x, x_grid, bandwidth=0.2):
@@ -20,6 +22,8 @@ def set_ranges(INCLUDE_RV, PLX, D_PLX, POL, listpar):
         rv = 3.1
         ebmv, rv = [[0.0, 0.1], None]
 
+    # dist_min = 0.01
+    # dist_max = 10.0
     dist_min = PLX - (3.0 * D_PLX)
     dist_max = PLX + (3.0 * D_PLX)
     if dist_min < 0.0:
@@ -705,3 +709,25 @@ def print_to_latex(MODEL, LABELS2, fname, params_fit, errors_fit):
     params_print = " \n".join(map(str, params_to_print))
 
     return params_to_print
+
+
+def BVcolors(FOLDER_DEFS, LIM, params, minfo, listpar, dims, lbdarr, models):
+    params[3] = np.cos(np.deg2rad(params[3]))
+    dist = params[4]
+    ebmv = params[5]
+    mod = griddataBA(minfo, models, params[:-LIM], listpar, dims)  # erg/s/cm2/micron
+    dista = 1e3 / dist
+    norma = (10 / dista) ** 2
+    mod = mod * norma
+    flux_mod = pyasl.unred(lbdarr * 1e4, mod, ebv=-1 * ebmv, R_V=3.1)
+
+    vega_path = FOLDER_DEFS + "vega.dat"
+    vega = np.loadtxt(vega_path)
+    wv_vg = vega[:, 0]  # will be in \AA
+    fx_vg = vega[:, 1]  # erg s-1 cm-2 \AA-1
+    fU, fB, fV, fR, fI = convolution_JohnsonsZP(wv_vg, fx_vg)  # zero points magnitudes.
+
+    mU, mB, mV, mR, mI = convolution_Johnsons(
+        lbdarr * 1e4, flux_mod * 1e-4, fU, fB, fV, fR, fI
+    )
+    print(mU, mB, mV, mR, mI)

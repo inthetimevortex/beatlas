@@ -13,6 +13,7 @@ from .utilities import (
     griddataBA,
     griddataBAtlas,
     print_to_latex,
+    BVcolors,
 )
 from .models_data import (
     model_reader,
@@ -45,6 +46,7 @@ __all__ = (
     "griddataBA",
     "griddataBAtlas",
     "print_to_latex",
+    "BVcolors",
     "model_reader",
     "read_stellar_prior",
     "read_iue",
