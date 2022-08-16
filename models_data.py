@@ -405,7 +405,7 @@ def read_observables(SED, POL, LBD_RANGE, FOLDER_DATA, STAR, lbd, models):
     if SED:
         index = 0
 
-        if "UV" in LBD_RANGE:
+        if "UV" in LBD_RANGE or LBD_RANGE == "FULLSED":
             wave0, flux0, sigma0 = read_iue(FOLDER_DATA, STAR, lbd[index])
         else:
             wave0, flux0, sigma0 = [], [], []

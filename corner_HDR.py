@@ -25,10 +25,10 @@ sfmt = ticker.ScalarFormatter(useMathText=True)
 sfmt.set_scientific(True)
 sfmt.set_powerlimits((-2, 3))
 
-# sns.set(style="ticks")
-sns.set_style(
-    "white"
-)  # , {"xtick.major.direction": "in", "ytick.major.direction": "in"})
+sns.set(style="ticks")
+# sns.set_style(
+#     "white"
+# )  # , {"xtick.major.direction": "in", "ytick.major.direction": "in"})
 
 
 def corner(
