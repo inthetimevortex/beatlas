@@ -6,6 +6,9 @@ from beatlas.be_theory import W2oblat, oblat2w, beta
 from beatlas.constants import *
 from beatlas.PT_makemag import convolution_Johnsons, convolution_JohnsonsZP
 from PyAstronomy import pyasl
+from scipy.signal import detrend
+from astropy.stats import median_absolute_deviation as MAD
+from scipy.optimize import curve_fit
 
 
 def kde_scipy(x, x_grid, bandwidth=0.2):
@@ -730,4 +733,226 @@ def BVcolors(FOLDER_DEFS, LIM, params, minfo, listpar, dims, lbdarr, models):
     mU, mB, mV, mR, mI = convolution_Johnsons(
         lbdarr * 1e4, flux_mod * 1e-4, fU, fB, fV, fR, fI
     )
-    print(mU, mB, mV, mR, mI)
+    # print(mU, mB, mV, mR, mI)
+
+    return mU, mB, mV, mR, mI
+
+
+def linfit(x, y, ssize=0.05, yerr=np.empty(0)):
+    """
+    linfit() - retorna um array (y) normalizado, em posicoes de x
+
+    x eh importante, pois y pode ser nao igualmente amostrado.
+    x e y devem estar em ordem crescente.
+
+    ssize = % do tamanho de y; numero de pontos usados nas extremidades
+    para a media do contínuo. 'ssize' de .5 à 0 (exclusive).
+
+    OUTPUT: y, yerr (if given)
+
+    .. code:: python
+
+        #Example:
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import pyhdust.phc as phc
+        import pyhdust.spectools as spt
+
+        wv = np.linspace(6500, 6600, 101)
+        flx = (np.arange(101)[::-1])/100.+1+phc.normgauss(4, x=wv,
+        xc=6562.79)*5
+
+        plt.plot(wv, flx)
+        normflx = spt.linfit(wv, flx)
+        plt.plot(wv, normflx, ls='--')
+
+        plt.xlabel(r'$\lambda$ ($\AA$)')
+        plt.ylabel('Flux (arb. unit)')
+
+    .. image:: _static/spt_linfit.png
+        :align: center
+        :width: 500
+    """
+    ny = np.array(y)[:]
+    if ssize < 0 or ssize > 0.5:
+        # _warn.warn("Invalid ssize value...", stacklevel=2)
+        ssize = 0
+    ssize = int(ssize * len(y))
+    if ssize == 0:
+        ssize = 1
+    medx0, medx1 = np.average(x[:ssize]), np.average(x[-ssize:])
+    if ssize > 9:
+        medy0, medy1 = np.median(ny[:ssize]), np.median(ny[-ssize:])
+    else:
+        medy0, medy1 = np.average(ny[:ssize]), np.average(ny[-ssize:])
+    new_y = medy0 + (medy1 - medy0) * (x - medx0) / (medx1 - medx0)
+    idx = np.where(new_y != 0)
+    ny[idx] = ny[idx] / new_y[idx]
+    if len(yerr) == 0.0:
+        return ny
+    else:
+        yerr = yerr / np.average(new_y)
+        return ny, yerr
+
+
+def lineProf(x, flx, lbc, flxerr=np.empty(0), hwidth=1000.0, ssize=0.05):
+    """
+    lineProf() - retorna um array (flx) normalizado e um array x em
+    VELOCIDADES. `lbc` deve fornecido em mesma unidade de x para conversão
+    lambda -> vel. Se vetor x jah esta em vel., usar funcao linfit().
+
+    x eh importante, pois y pode ser nao igualmente amostrado.
+    x e y devem estar em ordem crescente.
+
+    ssize = % do tamanho de y; numero de pontos usados nas extremidades
+    para a media do contínuo. 'ssize' de .5 à 0 (exclusive).
+
+    OUTPUT: vel (array), flx (array)
+    """
+    x = (x - lbc) / lbc * c * 1e-5  # km/s
+    idx = np.where(np.abs(x) <= 1.001 * hwidth)
+    if len(flxerr) == 0:
+        flux = linfit(x[idx], flx[idx], ssize=ssize)  # yerr=flxerr,
+        if len(x[idx]) == 0:
+            print("Wrong `lbc` in the lineProf function")
+        return x[idx], flux
+    else:
+        flux, flxerr = linfit(x[idx], flx[idx], yerr=flxerr[idx], ssize=ssize)
+        if len(x[idx]) == 0:
+            print("Wrong `lbc` in the lineProf function")
+        return x[idx], flux, flxerr
+
+
+def Sliding_Outlier_Removal(x, y, window_size, sigma=3.0, iterate=1):
+    """
+    Sigmaclip routine by Jonathan Labadie-Bartz
+    """
+    # remove NANs from the data
+    x = x[~np.isnan(y)]
+    y = y[~np.isnan(y)]
+
+    # make sure that the arrays are in order according to the x-axis
+    y = y[np.argsort(x)]
+    x = x[np.argsort(x)]
+
+    # tells you the difference between the last and first x-value
+    x_span = x.max() - x.min()
+    i = 0
+    x_final = x
+    y_final = y
+    while i < iterate:
+        i += 1
+        x = x_final
+        y = y_final
+
+        # empty arrays that I will append not-clipped data points to
+        x_good_ = np.array([])
+        y_good_ = np.array([])
+
+        # Creates an array with all_entries = True. index where you want to remove outliers are set to False
+        tf_ar = np.full((len(x),), True, dtype=bool)
+        ar_of_index_of_bad_pts = np.array([])  # not used anymore
+
+        # this is how many days (or rather, whatever units x is in) to slide the window center when finding the outliers
+        slide_by = window_size / 5.0
+
+        # calculates the total number of windows that will be evaluated
+        Nbins = int((int(x.max() + 1) - int(x.min())) / slide_by)
+
+        for j in range(Nbins + 1):
+            # find the minimum time in this bin, and the maximum time in this bin
+            x_bin_min = x.min() + j * (slide_by) - 0.5 * window_size
+            x_bin_max = x.min() + j * (slide_by) + 0.5 * window_size
+
+            # gives you just the data points in the window
+            x_in_window = x[(x > x_bin_min) & (x < x_bin_max)]
+            y_in_window = y[(x > x_bin_min) & (x < x_bin_max)]
+
+            # if there are less than 5 points in the window, do not try to remove outliers.
+            if len(y_in_window) > 5:
+
+                # Removes a linear trend from the y-data that is in the window.
+                y_detrended = detrend(y_in_window, type="linear")
+                y_in_window = y_detrended
+                # print(np.median(m_in_window_))
+                y_med = np.median(y_in_window)
+
+                # finds the Median Absolute Deviation of the y-pts in the window
+                y_MAD = MAD(y_in_window)
+
+                # This mask returns the not-clipped data points.
+                # Maybe it is better to only keep track of the data points that should be clipped...
+                mask_a = (y_in_window < y_med + y_MAD * sigma) & (
+                    y_in_window > y_med - y_MAD * sigma
+                )
+                # print(str(np.sum(mask_a)) + '   :   ' + str(len(m_in_window)))
+                y_good = y_in_window[mask_a]
+                x_good = x_in_window[mask_a]
+
+                y_bad = y_in_window[~mask_a]
+                x_bad = x_in_window[~mask_a]
+
+                # keep track of the index --IN THE ORIGINAL FULL DATA ARRAY-- of pts to be clipped out
+                try:
+                    clipped_index = np.where([x == z for z in x_bad])[1]
+                    tf_ar[clipped_index] = False
+                    ar_of_index_of_bad_pts = np.concatenate(
+                        [ar_of_index_of_bad_pts, clipped_index]
+                    )
+                except IndexError:
+                    # print('no data between {0} - {1}'.format(x_in_window.min(), x_in_window.max()))
+                    pass
+
+        ar_of_index_of_bad_pts = np.unique(ar_of_index_of_bad_pts)
+
+        x_final = x[tf_ar]
+        y_final = y[tf_ar]
+    return (x_final, y_final)
+
+
+def fwhm2sigma(fwhm):
+    """Function to convert FWHM to standard deviation (sigma)"""
+    return fwhm * np.sqrt(2.0) / (np.sqrt(2.0 * np.log(2.0)) * 2.0)
+
+
+def gauss(x, *p):
+    height, mu, fwhm = p
+    return height * np.exp(-((x - mu) ** 2.0) / (2.0 * fwhm2sigma(fwhm) ** 2))
+
+
+def delta_v(vel, flux, line):
+    """
+    Calcula o shift na velocidade, baseado no centro ajustado p gaussiana
+    """
+    # coeff, var_matrix = curve_fit(gauss, bin_centres, hist, p0=p0)
+    v_corte = np.zeros(2)
+    # if line == "Ha":
+    #    i_corte = np.argsort(np.abs((flux - 1.0) - (flux.max() - 1.0) * 0.5))
+    # else:
+    i_corte = np.argsort(np.abs((flux - 1.0) - (flux.min() - 1.0) * 0.5))
+
+    v_corte[0] = vel[i_corte[0]]
+
+    v_aux = vel[i_corte[1]]
+    count = 2
+    while v_corte[0] * v_aux > 0:
+        v_aux = vel[i_corte[count]]
+        count += 1
+    v_corte[1] = v_aux
+    v_corte.sort()
+    delt_v = 10.0
+
+    v_trechos = np.array(
+        [v_corte[0] - delt_v, v_corte[0], v_corte[1], v_corte[1] + delt_v]
+    )
+
+    # asas = np.where(
+    #     (vel > v_trechos[0]) * (vel < v_trechos[1])
+    #     + (vel > v_trechos[2]) * (vel < v_trechos[3])
+    # )
+
+    # p0 is the initial guess for the fitting coefficients (A, mu and sigma above)
+    p0 = [flux.max() - 1.0, v_trechos.mean(), v_trechos[2] - v_trechos[1]]
+    coeff, var_matrix = curve_fit(gauss, vel, flux - 1.0, p0=p0)
+
+    return coeff[1]

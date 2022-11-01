@@ -18,7 +18,7 @@ def convolution_JohnsonsZP(wave, flux, zeropt=True):
 
 def convolution_Johnsons(wave, flux, fU, fB, fV, fR, fI, zeropt=True):
 
-    print(hdt.doFilterConv(wave, flux, "U", zeropt=zeropt))
+    # print(hdt.doFilterConv(wave, flux, "U", zeropt=zeropt))
 
     mU = 2.5 * np.log10(fU / hdt.doFilterConv(wave, flux, "U", zeropt=zeropt))
     mB = 2.5 * np.log10(fB / hdt.doFilterConv(wave, flux, "B", zeropt=zeropt))

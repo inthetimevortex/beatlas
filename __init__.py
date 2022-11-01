@@ -14,6 +14,8 @@ from .utilities import (
     griddataBAtlas,
     print_to_latex,
     BVcolors,
+    linfit,
+    lineProf,
 )
 from .models_data import (
     model_reader,
@@ -26,10 +28,11 @@ from .models_data import (
 )
 
 # from .stats import lnlike, lnprob, lnprior, emcee_inference
-from .plots import residuals, residuals_POL, traceplot
+from .plots import residuals, residuals_line, residuals_POL, traceplot
 from .hpd import hpd_grid
 from .be_theory import w2wbig, wbig2w, oblat2w, W2oblat, obl2W, hfrac2tms, beta
-from .star_info import star_information
+
+# from .star_info import star_information
 from .corner_HDR import corner, hist2d, quantile
 
 __version__ = "1.0"
@@ -47,6 +50,8 @@ __all__ = (
     "griddataBAtlas",
     "print_to_latex",
     "BVcolors",
+    "linfit",
+    "lineProf",
     "model_reader",
     "read_stellar_prior",
     "read_iue",
@@ -59,6 +64,7 @@ __all__ = (
     # "lnprior",
     # "emcee_inferences",
     "residuals",
+    "residuals_line",
     "residuals_POL",
     "traceplot",
     "hpd_grid",
@@ -69,7 +75,7 @@ __all__ = (
     "obl2W",
     "hfrac2tms",
     "beta",
-    "star_information",
+    # "star_information",
     "corner",
     "hist2d",
     "quantile",

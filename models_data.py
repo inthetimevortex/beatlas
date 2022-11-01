@@ -1,10 +1,22 @@
 import numpy as np
 from glob import glob
 from astropy.io import fits
-from beatlas.utilities import bin_data, jy2cgs, kde_scipy
+from beatlas.utilities import (
+    bin_data,
+    jy2cgs,
+    kde_scipy,
+    lineProf,
+    Sliding_Outlier_Removal,
+    delta_v,
+)
 from astropy.io.votable import parse_single_table
 from scipy.interpolate import griddata
 import pandas as pd
+import emcee
+from icecream import ic
+from scipy.interpolate import interp1d
+
+lines_dict = {"Ha": 6562.801, "Hb": 4861.363, "Hd": 4101.74, "Hg": 4340.462}
 
 
 def model_reader(fname, HALPHA, HBETA, HDELTA, HGAMMA, POL):
@@ -24,8 +36,10 @@ def model_reader(fname, HALPHA, HBETA, HDELTA, HGAMMA, POL):
         if HALPHA:
             models_combined.append(data["models_Ha"])
             lbd_combined.append(data["lbd_Ha"])
-            EWs = data["EWs"]
-            FWHMs = data["FWHMs"]
+            # EWs = data["EWs"]
+            # FWHMs = data["FWHMs"]
+            EWs = []
+            FWHMs = []
         else:
             EWs = []
             FWHMs = []
@@ -49,9 +63,19 @@ def model_reader(fname, HALPHA, HBETA, HDELTA, HGAMMA, POL):
 
 
 def read_stellar_prior(FOLDER_FIGS, STAR, filename):
-    chain = np.load(FOLDER_FIGS + STAR + "/" + filename)
-    Ndim = np.shape(chain)[-1]
-    flatchain = chain.reshape((-1, Ndim))
+    # chain = np.load(FOLDER_FIGS + STAR + "/" + filename, allow_pickle=True)
+    # Ndim = np.shape(chain)[-1]
+    # flatchain = chain.reshape((-1, Ndim))
+    reader = emcee.backends.HDFBackend(FOLDER_FIGS + STAR + "/" + filename)
+    try:
+        tau = reader.get_autocorr_time()
+        burnin = int(2 * np.max(tau))
+        thin = int(0.5 * np.min(tau))
+    except:
+        burnin = int(2 * 10000.0)
+        thin = int(0.5 * 10000.0)
+
+    flatchain = reader.get_chain(discard=burnin, flat=True, thin=thin)
 
     mas = flatchain[:, 0]
     obl = flatchain[:, 1]
@@ -395,7 +419,54 @@ def read_opd_pol(FOLDER_DATA, STAR):
     return wave, flux, sigma
 
 
-def read_observables(SED, POL, LBD_RANGE, FOLDER_DATA, STAR, lbd, models):
+def read_line_spectra(FOLDER_DATA, STAR, lbd, models, linename):
+    file_name = glob(FOLDER_DATA + STAR + "/SPECTRA/*" + linename + "*.fits")[0]
+    hdulist = fits.open(file_name)
+    fits_header = hdulist[0].header
+    flux = hdulist[0].data
+    wave = fits_header["CRVAL1"] + fits_header["CDELT1"] * np.arange(len(flux))
+
+    cs = 299792.458  # km/s
+    lbd_central = lines_dict[linename]
+
+    # gives the line profiles in velocity space
+    vl, fx = lineProf(wave, flux, hwidth=5000.0, lbc=lbd_central)
+    vel, flux = Sliding_Outlier_Removal(vl, fx, 50, 8, 15)
+
+    radv = delta_v(vel, flux, linename)
+    print("RADIAL VELOCITY = {0}".format(radv))
+    vel = vel - radv
+    wl = cs * lbd_central / (cs - vel)
+
+    wave = wl * 1e-4  # mum
+    interpolator = interp1d(wave, flux)
+    # lbdarr = lbd[1:-1]
+    flux = interpolator(lbd)
+    # print(lineProf(lbd, flux, hwidth=5000.0, lbc=lbd_central * 1e-4))
+    sigma = np.zeros(len(flux))
+    sigma.fill(0.017656218)
+
+    remove_partHa = True
+    if remove_partHa:
+        lbd1 = lbd[:213]
+        lbd2 = lbd[244:]
+        lbd = np.append(lbd1, lbd2)
+        novo_models = np.zeros([len(models), len(lbd)])
+        flux_new1 = flux[:213]
+        flux_new2 = flux[244:]
+        flux_new = np.append(flux_new1, flux_new2)
+        sigma_new = np.append(sigma[:213], sigma[244:])
+        for i in range(len(models)):
+            novo_models[i] = np.append(models[i][:213], models[i][244:])
+    # novo_models = np.zeros((len(models), len(lbdarr)))
+    # for i in range(len(models)):
+    #     mm = models[i][1:-1][np.isfinite(fluxes)]
+    #     novo_models[i] = mm
+
+    return flux_new, sigma_new, lbd, novo_models
+
+
+def read_observables(SED, POL, HALPHA, LBD_RANGE, FOLDER_DATA, STAR, lbd, models):
 
     # data_flux = []
     # data_wave = []
@@ -411,15 +482,29 @@ def read_observables(SED, POL, LBD_RANGE, FOLDER_DATA, STAR, lbd, models):
             wave0, flux0, sigma0 = [], [], []
         if LBD_RANGE != "UV":
             wave1, flux1, sigma1 = read_votable(FOLDER_DATA, STAR)
+            if STAR == "gammaCas":
+                wave1, flux1, sigma1 = np.loadtxt(FOLDER_DATA + STAR + "/vband.dat").T
         else:
             wave1, flux1, sigma1 = [], [], []
 
         wave = np.hstack([wave0, wave1])
         flux = np.hstack([flux0, flux1])
         sigma = np.hstack([sigma0, sigma1])
+        # print(wave, flux, sigma)
         data_wave, data_flux, data_sigma, grid_flux = combine_sed(
             LBD_RANGE, wave, flux, sigma, models[index], lbd[index]
         )
+
+        if HALPHA:
+            index = 1
+            linename = "Ha"
+            fluxHa, sigmaHa, lbdHa, modelsHa = read_line_spectra(
+                FOLDER_DATA, STAR, lbd[index], models[index], linename
+            )
+            data_wave = [data_wave, lbdHa]
+            data_flux = [data_flux, fluxHa]
+            data_sigma = [data_sigma, sigmaHa]
+            grid_flux = [grid_flux, modelsHa]
 
         return data_wave, data_flux, data_sigma, grid_flux
 
