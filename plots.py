@@ -91,10 +91,10 @@ def residuals(
             ax1 = plt.axes([left, bottom, width, height])
             ax2 = plt.axes([left, bottom - 0.06, width, 0.05])
         else:
-            bottom, left = 0.75, 0.41  # 0.80, 0.48  # 0.75, 0.48
+            bottom, left = 0.85, 0.58  # 0.80, 0.48  # 0.75, 0.48
             width, height = 0.96 - left, 0.97 - bottom
             ax1 = plt.axes([left, bottom, width, height])
-            ax2 = plt.axes([left, bottom - 0.05, width, 0.05])
+            ax2 = plt.axes([left, bottom - 0.08, width, 0.07])
         ax1.get_xaxis().set_visible(False)
         ms = 6
 
@@ -185,6 +185,7 @@ def residuals_line(
     INCLUDE_RV,
     LIM,
     STEPS,
+    SED,
     sampler,
     data_wave_line,
     data_flux_line,
@@ -214,10 +215,17 @@ def residuals_line(
         F_list_unnorm = griddataBA(minfo, grid_flux_line, params[:-LIM], listpar, dims,)
         F_list[i] = linfit(data_wave_line, F_list_unnorm)
 
-    bottom, left = 0.64, 0.61  # 0.80, 0.48  # 0.75, 0.48
-    width, height = 0.97 - left, 0.74 - bottom
-    ax1 = plt.axes([left, bottom, width, height])
-    ax2 = plt.axes([left, bottom - 0.06, width, 0.05])
+    if not SED:
+        bottom, left = 0.85, 0.58  # 0.80, 0.48  # 0.75, 0.48
+        width, height = 0.96 - left, 0.97 - bottom
+        ax1 = plt.axes([left, bottom, width, height])
+        ax2 = plt.axes([left, bottom - 0.08, width, 0.07])
+    else:
+        bottom, left = 0.64, 0.61  # 0.80, 0.48  # 0.75, 0.48
+        width, height = 0.97 - left, 0.74 - bottom
+        ax1 = plt.axes([left, bottom, width, height])
+        ax2 = plt.axes([left, bottom - 0.06, width, 0.05])
+    
     ax1.get_xaxis().set_visible(False)
     ms = 6
 
@@ -248,7 +256,7 @@ def residuals_line(
     # Residuals
     # ax2.plot(lbd_line, (flux_line - F_list[-1])/dflux_line, marker='o', color='k', alpha=0.5)
     ax2.plot(
-        vl, (fxx - fx) / data_sigma_line[1:], marker="o", ms=ms, color="k", alpha=0.5
+        vl, (fxx - fx) / data_sigma_line[1:], marker="o", ls="", ms=ms, color="k", alpha=0.5
     )
 
     ax2.set_ylabel(r"$(F-F_\mathrm{m})/\sigma$", fontsize=14)

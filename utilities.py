@@ -23,7 +23,7 @@ def set_ranges(INCLUDE_RV, PLX, D_PLX, POL, listpar):
         ebmv, rv = [[0.0, 0.1], [2.0, 5.8]]
     else:
         rv = 3.1
-        ebmv, rv = [[0.0, 0.1], None]
+        ebmv, rv = [[0.0, 0.03], None]
 
     # dist_min = 0.01
     # dist_max = 10.0
@@ -638,67 +638,67 @@ def print_to_latex(MODEL, LABELS2, fname, params_fit, errors_fit):
 
     file1.writelines(
         r"$R_{\rm eq}/R_{\rm p}$"
-        + " & ${0:.2f}^{{+{1:.2f}}}_{{-{2:.2f}}}$ & Derived  \\\ \n".format(
+        + " & ${0:.3f}^{{+{1:.3f}}}_{{-{2:.3f}}}$ & Derived  \\\ \n".format(
             oblat, oblat_range[0] - oblat, oblat - oblat_range[1]
         )
     )
     params_to_print.append(
-        "Oblateness = {0:.2f} +{1:.2f} -{2:.2f}".format(
+        "Oblateness = {0:.3f} +{1:.3f} -{2:.3f}".format(
             oblat, oblat_range[0] - oblat, oblat - oblat_range[1]
         )
     )
     file1.writelines(
         r"$R_{\rm eq}\,[R_\odot]$"
-        + " & ${0:.2f}^{{+{1:.2f}}}_{{-{2:.2f}}}$ & Derived  \\\ \n".format(
+        + " & ${0:.3f}^{{+{1:.3f}}}_{{-{2:.3f}}}$ & Derived  \\\ \n".format(
             Req, Req_max - Req, Req - Req_min
         )
     )
     params_to_print.append(
-        "Equatorial radius = {0:.2f} +{1:.2f} -{2:.2f}".format(
+        "Equatorial radius = {0:.3f} +{1:.3f} -{2:.3f}".format(
             Req, Req_max - Req, Req - Req_min
         )
     )
     file1.writelines(
         r"$\log(L)\,[L_\odot]$"
-        + " & ${0:.2f}^{{+{1:.2f}}}_{{-{2:.2f}}}$ & Derived  \\\ \n".format(
+        + " & ${0:.3f}^{{+{1:.3f}}}_{{-{2:.3f}}}$ & Derived  \\\ \n".format(
             logL, logL_range[0] - logL, logL - logL_range[1]
         )
     )
     params_to_print.append(
-        "Log Luminosity  = {0:.2f} +{1:.2f} -{2:.2f}".format(
+        "Log Luminosity  = {0:.3f} +{1:.3f} -{2:.3f}".format(
             logL, logL_range[0] - logL, logL - logL_range[1]
         )
     )
     file1.writelines(
         r"$\beta$"
-        + " & ${0:.2f}^{{+{1:.2f}}}_{{-{2:.2f}}}$ & Derived \\\ \n".format(
+        + " & ${0:.3f}^{{+{1:.3f}}}_{{-{2:.3f}}}$ & Derived \\\ \n".format(
             beta_par, beta_range[1] - beta_par, beta_par - beta_range[0]
         )
     )
     params_to_print.append(
-        "Beta  = {0:.2f} +{1:.2f} -{2:.2f}".format(
+        "Beta  = {0:.3f} +{1:.3f} -{2:.3f}".format(
             beta_par, beta_range[1] - beta_par, beta_par - beta_range[0]
         )
     )
     file1.writelines(
         r"$v \sin i\,\rm[km/s]$"
-        + " & ${0:.2f}^{{+{1:.2f}}}_{{-{2:.2f}}}$ & Derived  \\\ \n".format(
+        + " & ${0:.3f}^{{+{1:.3f}}}_{{-{2:.3f}}}$ & Derived  \\\ \n".format(
             vsini, vsini_range[0] - vsini, vsini - vsini_range[1]
         )
     )
     params_to_print.append(
-        "vsini = {0:.2f} +{1:.2f} -{2:.2f}".format(
+        "vsini = {0:.3f} +{1:.3f} -{2:.3f}".format(
             vsini, vsini_range[0] - vsini, vsini - vsini_range[1]
         )
     )
     file1.writelines(
         r"$T_{\rm eff}$"
-        + " & ${0:.2f}^{{+{1:.2f}}}_{{-{2:.2f}}}$ & Derived  \\\ \n".format(
+        + " & ${0:.3f}^{{+{1:.3f}}}_{{-{2:.3f}}}$ & Derived  \\\ \n".format(
             Teff, Teff_range[0] - Teff, Teff - Teff_range[1]
         )
     )
     params_to_print.append(
-        "Teff = {0:.2f} +{1:.2f} -{2:.2f}".format(
+        "Teff = {0:.3f} +{1:.3f} -{2:.3f}".format(
             Teff, Teff_range[0] - Teff, Teff - Teff_range[1]
         )
     )

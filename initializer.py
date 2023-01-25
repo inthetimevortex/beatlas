@@ -50,7 +50,7 @@ if CORNER_COLOR == "random" or CORNER_COLOR == "":
     CORNER_COLOR = random.choice(
         [
             "blue",
-            "dark blue",
+            "darkblue",
             "teal",
             "green",
             "yellow",
@@ -67,7 +67,7 @@ if CORNER_COLOR == "blue":
     COLOR_HIST = "xkcd:powder blue"
     COLOR_DENS = "xkcd:clear blue"
 
-elif CORNER_COLOR == "dark blue":
+elif CORNER_COLOR == "darkblue":
     COLOR = "xkcd:petrol"
     COLOR_HIST = "xkcd:cool blue"
     COLOR_DENS = "xkcd:ocean"
@@ -115,7 +115,7 @@ elif CORNER_COLOR == "pink":
 
 if MODEL == "BeAtlas2022_phot":
     LABELS = [
-        r"$M\,[M_\odot]$",
+        r"$M\,[\mathrm{M_{\odot}}]$",
         r"$W$",
         r"$t/t_\mathrm{ms}$",
         r"$i[\mathrm{^o}]$",
@@ -126,11 +126,11 @@ if MODEL == "BeAtlas2022_phot":
 
 elif MODEL == "acol" or MODEL == "pol" or MODEL == "aara":
     LABELS = [
-        r"$M\,[\mathrm{M_\odot}]$",
+        r"$M\,[\mathrm{M_{\odot}}]$",
         r"$W$",
         r"$t/t_\mathrm{ms}$",
         r"$\log \, n_0 \, [\mathrm{cm^{-3}}]$",
-        r"$R_\mathrm{D}\, [R_\star]$",
+        r"$R_\mathrm{D}\, [R_{\rm eq}]$",
         r"$n$",
         r"$i[\mathrm{^o}]$",
         r"$\pi\,[\mathrm{mas}]$",
@@ -151,7 +151,7 @@ elif MODEL == "acol" or MODEL == "pol" or MODEL == "aara":
 
 elif MODEL == "BeAtlas2015_disk":
     LABELS = [
-        r"$M\,[\mathrm{M_\odot}]$",
+        r"$M\,[\mathrm{M_{\odot}}]$",
         r"$W$",
         r"$\Sigma_0 \, [\mathrm{g/cm^{-2}}]$",
         r"$n$",
@@ -202,3 +202,8 @@ if HDELTA:
     TAG = TAG + "+Hd"
 if HGAMMA:
     TAG = TAG + "+Hg"
+
+if HALPHA or HBETA or HDELTA or HGAMMA:
+    USE_LINES = True
+else:
+    USE_LINES = False

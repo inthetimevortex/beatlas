@@ -8,7 +8,10 @@ import matplotlib.pyplot as pl
 from matplotlib.ticker import MaxNLocator
 from matplotlib.colors import LinearSegmentedColormap, colorConverter
 from matplotlib.ticker import ScalarFormatter
+#import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
 from beatlas.hpd import hpd_grid
+#from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 
 try:
     from scipy.ndimage import gaussian_filter
@@ -19,16 +22,19 @@ __all__ = ["corner", "hist2d", "quantile"]
 
 import seaborn as sns
 import matplotlib.ticker as ticker
+from scipy.stats.stats import pearsonr
+import matplotlib
+
 
 sfmt = ticker.ScalarFormatter(useMathText=True)
 # sfmt.set_powerlimits((0, 0))
 sfmt.set_scientific(True)
 sfmt.set_powerlimits((-2, 3))
 
-sns.set(style="ticks")
-# sns.set_style(
-#     "white"
-# )  # , {"xtick.major.direction": "in", "ytick.major.direction": "in"})
+# sns.set(style="ticks")
+sns.set_style(
+    "white"
+)  # , {"xtick.major.direction": "in", "ytick.major.direction": "in"})
 
 
 def corner(
@@ -58,6 +64,7 @@ def corner(
     top_ticks=False,
     use_math_text=False,
     hist_kwargs=None,
+    add_pvalue=False,
     **hist2d_kwargs
 ):
     """
@@ -274,6 +281,8 @@ def corner(
     if smooth1d is None:
         hist_kwargs["histtype"] = hist_kwargs.get("histtype", "stepfilled")
 
+    norm = matplotlib.colors.Normalize(vmin=-1.0, vmax=1.0)
+    cmap = matplotlib.cm.get_cmap('RdBu')
     for i, x in enumerate(xs):
         # Deal with masked arrays.
         if hasattr(x, "compressed"):
@@ -409,6 +418,11 @@ def corner(
                 **hist2d_kwargs
             )
 
+            # PLOTS PVALUE ON THE 2D MAP
+            # ADDED BY AMANDA <3
+            pvalue = pearsonr(x, y)[0]
+            pv_patch = Line2D([0], [0], marker='o', color='w', markeredgecolor='gray', markerfacecolor=cmap(norm(pvalue)), label='{:.2f}'.format(pvalue), markersize=3)
+
             if truths is not None:
                 if (
                     np.array(truths[i]).any() is not None
@@ -433,15 +447,15 @@ def corner(
                 if np.array(truths[j]).any() is not None:
                     if isinstance(truths[j], list):
                         for truj in truths[j]:
-                            ax.axvline(truj, color=truth_color, zorder=10)
+                            ax.axvline(truj, color=truth_color)
                     else:
-                        ax.axvline(truths[j], color=truth_color, zorder=10)
+                        ax.axvline(truths[j], color=truth_color)
                 if np.array(truths[i]).any() is not None:
                     if isinstance(truths[i], list):
                         for trui in truths[i]:
-                            ax.axhline(trui, color=truth_color, zorder=10)
+                            ax.axhline(trui, color=truth_color)
                     else:
-                        ax.axhline(truths[i], color=truth_color, zorder=10)
+                        ax.axhline(truths[i], color=truth_color)
 
             ax.xaxis.set_major_locator(MaxNLocator(max_n_ticks, prune="lower"))
             ax.yaxis.set_major_locator(MaxNLocator(max_n_ticks, prune="lower"))
@@ -467,6 +481,29 @@ def corner(
 
                 # use MathText for axes ticks
                 ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=use_math_text))
+
+            if add_pvalue:
+                ax.legend(handles=[pv_patch], loc='best', markerscale=9, fontsize=16, handletextpad=0.1, borderpad=0.7)
+    if add_pvalue:      
+        # cbar = fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes[-3:-1, -1], ticks=[-1, 0, 1], shrink=0.9)
+        # ax_divider = make_axes_locatable(axes[0, 1])
+        # cax = ax_divider.append_axes("top", size="20%", pad="40%")
+        # print(axes[-1, -1].get_position())
+        bottom = axes[-1, -1].get_position().x1 - 0.02
+        left = axes[-1, -1].get_position().y1 + 0.01
+        # width = 
+
+        # bottom, left = 0.96, 0.16
+        if len(axes[0]) > 7:
+            width, height = 0.29, 0.02
+        else:
+            width, height = 0.25, 0.02
+        cax = pl.axes([left, bottom, width, height])
+        cbar = fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax, ticks=[-1, 0, 1], shrink=0.8, orientation='horizontal')
+        cbar.ax.set_xticklabels(['-1', '0', '1'])  # vertically oriented colorbar
+        # cbar.ax.yaxis.set_label_position('left')
+        # cbar.ax.yaxis.set_ticks_position('left')        
+        cbar.set_label(label='Pearson coef.', size=16)
 
     return fig, axes
 
@@ -740,5 +777,12 @@ def hist2d(
         contour_kwargs["colors"] = contour_kwargs.get("colors", color)
         ax.contour(X2, Y2, H2.T, V, **contour_kwargs)
 
+    # pvalue = pearsonr(x, y)[0]
+    # norm = matplotlib.colors.Normalize(vmin=-1.0, vmax=1.0)
+    # cmap = matplotlib.cm.get_cmap('RdBu')
+    # pv_patch = Line2D([0], [0], marker='o', color='w', edgecolor='gray', markerfacecolor=cmap(norm(pvalue)), label='{:.2f}'.format(pvalue), markersize=3)
+    # #red_patch = mpatches.Patch(color=cmap(norm(pvalue)), edgecolor = 'k', label='{:.2f}'.format(pvalue))
     ax.set_xlim(range[0])
     ax.set_ylim(range[1])
+    # ax.legend(handles=[pv_patch], loc='best', markerscale=9, fontsize=16, frameon=False, handletextpad=0.1)
+
