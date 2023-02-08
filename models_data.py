@@ -33,8 +33,11 @@ def model_reader(fname, HALPHA, HBETA, HDELTA, HGAMMA, POL):
         lbd_SED = data["lbd_SED"]
         models_combined = [models_SED]
         lbd_combined = [lbd_SED]
-        models_combined.append(data["models_Ha"])
-        lbd_combined.append(data["lbd_Ha"])
+        try:
+            models_combined.append(data["models_Ha"])
+            lbd_combined.append(data["lbd_Ha"])
+        except:
+            pass
 
         if HALPHA:
             # models_combined.append(data["models_Ha"])
@@ -47,15 +50,15 @@ def model_reader(fname, HALPHA, HBETA, HDELTA, HGAMMA, POL):
             EWs = []
             FWHMs = []
 
-        # if HBETA:
-        models_combined.append(data["models_Hb"])
-        lbd_combined.append(data["lbd_Hb"])
-        # if HDELTA:
-        models_combined.append(data["models_Hd"])
-        lbd_combined.append(data["lbd_Hd"])
-        # if HGAMMA:
-        models_combined.append(data["models_Hg"])
-        lbd_combined.append(data["lbd_Hg"])
+        if HBETA:
+            models_combined.append(data["models_Hb"])
+            lbd_combined.append(data["lbd_Hb"])
+        if HDELTA:
+            models_combined.append(data["models_Hd"])
+            lbd_combined.append(data["lbd_Hd"])
+        if HGAMMA:
+            models_combined.append(data["models_Hg"])
+            lbd_combined.append(data["lbd_Hg"])
     else:
         models_combined = [data["models_POL"]]
         lbd_combined = [data["lbd_POL"]]

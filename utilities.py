@@ -9,7 +9,15 @@ from PyAstronomy import pyasl
 from scipy.signal import detrend
 from astropy.stats import median_absolute_deviation as MAD
 from scipy.optimize import curve_fit
+from icecream import ic
 
+def norm_n0s(M, num=8, n0min=1e11):
+    """ doc 
+    """
+    n0max = np.exp(0.14*M+31.02)
+    if M <= 7.:
+        n0max = np.exp(-0.152*M**2+2.51*M+22.09)
+    return np.logspace(np.log10(n0min), np.log10(n0max), num=num)
 
 def kde_scipy(x, x_grid, bandwidth=0.2):
     """Kernel Density Estimation with Scipy"""
@@ -34,7 +42,7 @@ def set_ranges(INCLUDE_RV, PLX, D_PLX, POL, listpar):
 
     ranges = []
     for val in listpar:
-        ranges.append([val[0], val[-1]])
+        ranges.append([np.min(val), np.max(val)])
 
     if not POL:
         ranges.append([dist_min, dist_max])
@@ -386,7 +394,8 @@ def griddataBA(minfo, models, params, listpar, dims):
     obs: last argument ('listpar') had to be included here
     """
 
-    # print(params[0])
+    # ic(params[0])
+    # ic(listpar)
     idx = np.arange(len(minfo))
     lim_vals = len(params) * [
         [],
@@ -406,7 +415,7 @@ def griddataBA(minfo, models, params, listpar, dims):
         # ic(idx)
 
     # print(idx)
-    # ic(minfo[idx][:, -1])
+    # ic(len(minfo[0]))
     out_interp = griddata(minfo[idx], models[idx], params)[0]
 
     if np.sum(out_interp) == 0 or np.sum(np.isnan(out_interp)) > 0:
@@ -506,7 +515,7 @@ def print_to_latex(MODEL, LABELS2, fname, params_fit, errors_fit):
         incl_range = [incl + errors_fit[3][0], incl - errors_fit[3][1]]
         # dist = best_pars[4][0]
         # ebmv = best_pars[5][0]
-    if MODEL == "acol" or MODEL == "aara" or MODEL == "pol":
+    if MODEL == "acol" or MODEL == "aara" or MODEL == "pol" or MODEL == "BeAtlas2022_disk":
         Mstar = params_fit[0]
         W = params_fit[1]
         tms = params_fit[2]

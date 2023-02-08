@@ -77,7 +77,7 @@ def residuals(
     keep = data_sigma != 0.0
     data_flux_notlog = 10 ** data_flux
     data_sigma_notlog = data_sigma * data_flux_notlog
-    if MODEL == "acol" or MODEL == "aara":
+    if MODEL == "acol" or MODEL == "aara" or MODEL == "BeAtlas2022_disk":
         bottom, left = 0.80, 0.51  # 0.80, 0.48  # 0.75, 0.48
         width, height = 0.96 - left, 0.97 - bottom
         ax1 = plt.axes([left, bottom, width, height])

@@ -124,7 +124,7 @@ if MODEL == "BeAtlas2022_phot":
     ]
     LABELS2 = LABELS
 
-elif MODEL == "acol" or MODEL == "pol" or MODEL == "aara":
+elif MODEL == "acol" or MODEL == "pol" or MODEL == "aara" or MODEL == "BeAtlas2022_disk":
     LABELS = [
         r"$M\,[\mathrm{M_{\odot}}]$",
         r"$W$",
