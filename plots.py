@@ -5,7 +5,7 @@ from PyAstronomy import pyasl
 from beatlas.utilities import griddataBA, griddataBAtlas, lineProf, linfit
 from icecream import ic
 
-sns.set_style("white")
+sns.set_style("ticks")
 lines_dict = {"Ha": 0.6562801, "Hb": 4861.363, "Hd": 4101.74, "Hg": 4340.462}
 
 
@@ -55,6 +55,7 @@ def residuals(
     For the SED and the lines
 
     """
+    sns.set_style("ticks")
     flat_samples = sampler.get_chain(discard=burnin, thin=thin, flat=True)
     par_list = []
     inds = np.random.randint(len(flat_samples), size=300)
@@ -83,7 +84,7 @@ def residuals(
         ax1 = plt.axes([left, bottom, width, height])
         ax2 = plt.axes([left, bottom - 0.095, width, 0.075])
         ax1.get_xaxis().set_visible(False)
-        ms = 8
+        ms = 6
     else:
         if HALPHA:
             bottom, left = 0.87, 0.61  # 0.80, 0.48  # 0.75, 0.48
@@ -96,7 +97,7 @@ def residuals(
             ax1 = plt.axes([left, bottom, width, height])
             ax2 = plt.axes([left, bottom - 0.08, width, 0.07])
         ax1.get_xaxis().set_visible(False)
-        ms = 6
+        ms = 2
 
     # Plot Models
     for i in range(len(par_list)):
@@ -133,7 +134,8 @@ def residuals(
             data_wave[keep],
             (data_flux_notlog[keep] - F_temp[keep]) / data_sigma_notlog[keep],
             "ks",
-            ms=int(ms - 2),
+            # ms=int(ms - 2),
+            ms=ms,
             alpha=0.1,
         )
 
@@ -144,7 +146,7 @@ def residuals(
         yerr=data_sigma_notlog[keep],
         ls="",
         marker="o",
-        # alpha=0.5,
+        alpha=0.5,
         ms=ms,
         color="k",
         linewidth=1,
@@ -162,7 +164,7 @@ def residuals(
         color="k",
         linewidth=1,
     )
-    ax2.axhline(y=0.0, ls=(0, (5, 10)), lw=0.7, color="k")
+    ax2.axhline(y=0.0, ls=(0, (5, 10)), lw=0.6, color="k")
     ax2.set_xlabel(r"$\lambda\,\mathrm{[\mu m]}$", fontsize=14)
     ax1.set_ylabel(
         r"$F_{\lambda}\,\mathrm{[erg\, s^{-1}\, cm^{-2}\, \mu m^{-1}]}$", fontsize=14,
@@ -227,14 +229,17 @@ def residuals_line(
         ax2 = plt.axes([left, bottom - 0.06, width, 0.05])
     
     ax1.get_xaxis().set_visible(False)
-    ms = 6
+    ms = 2
 
+    vl, fxx = lineProf(data_wave_line, data_flux_line, hwidth=3000.0, lbc=lbd_central)
     for i in range(len(par_list)):
         vl, fx = lineProf(data_wave_line, F_list[i], hwidth=3000.0, lbc=lbd_central)
         # ax1.plot(lbd_line, F_list[i], color='gray', alpha=0.1)
         ax1.plot(vl, fx, color="gray", alpha=0.1)
+        ax2.plot(
+            vl, (fxx - fx) / data_sigma_line[1:], "ks", ms=ms, alpha=0.1
+        )
 
-    vl, fxx = lineProf(data_wave_line, data_flux_line, hwidth=3000.0, lbc=lbd_central)
     ax1.errorbar(
         vl,
         fxx,
@@ -255,11 +260,10 @@ def residuals_line(
     # ax1.set_title(line)
     # Residuals
     # ax2.plot(lbd_line, (flux_line - F_list[-1])/dflux_line, marker='o', color='k', alpha=0.5)
-    ax2.plot(
-        vl, (fxx - fx) / data_sigma_line[1:], marker="o", ls="", ms=ms, color="k", alpha=0.5
-    )
+
 
     ax2.set_ylabel(r"$(F-F_\mathrm{m})/\sigma$", fontsize=14)
+    ax2.axhline(y=0.0, ls=(0, (5, 10)), lw=0.7, color="k")
     # ax2.set_xlabel('$\lambda\,\mathrm{[\mu m]}$')#, fontsize=14)
     ax2.set_xlabel("Velocity [km/s]", fontsize=14)
 

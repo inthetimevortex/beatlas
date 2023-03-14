@@ -117,10 +117,10 @@ if MODEL == "BeAtlas2022_phot":
     LABELS = [
         r"$M\,[\mathrm{M_{\odot}}]$",
         r"$W$",
-        r"$t/t_\mathrm{ms}$",
+        r"$t/t_\mathrm{MS}$",
         r"$i[\mathrm{^o}]$",
         r"$\pi\,[mas]$",
-        r"E(B-V)",
+        r"$E(B-V)$",
     ]
     LABELS2 = LABELS
 
@@ -128,24 +128,24 @@ elif MODEL == "acol" or MODEL == "pol" or MODEL == "aara" or MODEL == "BeAtlas20
     LABELS = [
         r"$M\,[\mathrm{M_{\odot}}]$",
         r"$W$",
-        r"$t/t_\mathrm{ms}$",
+        r"$t/t_\mathrm{MS}$",
         r"$\log \, n_0 \, [\mathrm{cm^{-3}}]$",
         r"$R_\mathrm{D}\, [R_{\rm eq}]$",
         r"$n$",
         r"$i[\mathrm{^o}]$",
         r"$\pi\,[\mathrm{mas}]$",
-        r"E(B-V)",
+        r"$E(B-V)$",
     ]
     LABELS2 = [
         r"$M$",
         r"$W$",
-        r"$t/t_\mathrm{ms}$",
+        r"$t/t_\mathrm{MS}$",
         r"$\log \, n_0 $",
         r"$R_\mathrm{D}$",
         r"$n$",
         r"$i$",
         r"$\pi$",
-        r"E(B-V)",
+        r"$E(B-V)$",
     ]
 
 
@@ -157,7 +157,7 @@ elif MODEL == "BeAtlas2015_disk":
         r"$n$",
         r"$i[\mathrm{^o}]$",
         r"$\pi\,[\mathrm{mas}]$",
-        r"E(B-V)",
+        r"$E(B-V)$",
     ]
     LABELS2 = [
         r"$M$",
@@ -167,7 +167,7 @@ elif MODEL == "BeAtlas2015_disk":
         r"$n$",
         r"$i$",
         r"$\pi$",
-        r"E(B-V)",
+        r"$E(B-V)$",
     ]
 
 if POL:
