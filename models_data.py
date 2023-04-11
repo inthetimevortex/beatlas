@@ -493,7 +493,9 @@ def read_line_spectra(FOLDER_DATA, STAR, lbd, models, linename):
     #     mm = models[i][1:-1][np.isfinite(fluxes)]
     #     novo_models[i] = mm
 
-    return flux_new, sigma_new, lbd, novo_models
+        return flux_new, sigma_new, lbd, novo_models
+    else:
+        return flux, sigma, lbd, models
 
 
 def read_observables(SED, POL, HALPHA, HBETA, HDELTA, HGAMMA, LBD_RANGE, FOLDER_DATA, STAR, lbd, models):
